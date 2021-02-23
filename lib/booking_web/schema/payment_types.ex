@@ -31,4 +31,21 @@ defmodule BookingWeb.Schema.PaymentTypes do
       middleware(&build_payload/2)
     end
   end
+
+  #subscriptions
+  object :payment_subscriptions do
+    field :payment_applied, :payment do
+      config(fn _, _ ->
+        {:ok, topic: "*"}
+      end)
+
+      trigger :apply_payment_to_order, topic: fn
+        %{result: _result} -> "*"
+      end
+
+      resolve fn %{result: result}, _, _ ->
+        {:ok, result}
+      end
+    end
+  end
 end

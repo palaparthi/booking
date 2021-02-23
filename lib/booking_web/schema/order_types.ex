@@ -58,4 +58,35 @@ defmodule BookingWeb.Schema.OrderTypes do
       middleware(&build_payload/2)
     end
   end
+
+  #subscriptions
+  object :order_subscriptions do
+    field :order_added, :order do
+      config(fn _, _ ->
+        {:ok, topic: "*"}
+      end)
+
+      trigger :create_order, topic: fn
+        %{result: _result} -> "*"
+      end
+
+      resolve fn %{result: result}, _, _ ->
+        {:ok, result}
+      end
+    end
+
+    field :order_and_payment_added, :order do
+      config(fn _, _ ->
+        {:ok, topic: "*"}
+      end)
+
+      trigger :create_order_and_pay, topic: fn
+        %{result: _result} -> "*"
+      end
+
+      resolve fn %{result: result}, _, _ ->
+        {:ok, result}
+      end
+    end
+  end
 end

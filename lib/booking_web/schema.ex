@@ -14,4 +14,9 @@ defmodule BookingWeb.Schema do
     import_fields(:order_mutations)
     import_fields(:payment_mutations)
   end
+
+  subscription do
+    import_fields(:order_subscriptions)
+    import_fields(:payment_subscriptions)
+  end
 end

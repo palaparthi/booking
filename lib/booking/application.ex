@@ -14,9 +14,10 @@ defmodule Booking.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Booking.PubSub},
       # Start the Endpoint (http/https)
-      BookingWeb.Endpoint
+      BookingWeb.Endpoint,
       # Start a worker by calling: Booking.Worker.start_link(arg)
       # {Booking.Worker, arg}
+      {Absinthe.Subscription, BookingWeb.Endpoint}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

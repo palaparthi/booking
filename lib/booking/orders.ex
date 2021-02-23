@@ -7,6 +7,7 @@ defmodule Booking.Orders do
   alias Booking.Repo
 
   alias Booking.Orders.Order
+  alias Booking.Payments
 
   @doc """
   Returns the list of orders.
@@ -24,18 +25,16 @@ defmodule Booking.Orders do
   @doc """
   Gets a single order.
 
-  Raises `Ecto.NoResultsError` if the Order does not exist.
-
   ## Examples
 
-      iex> get_order!(123)
+      iex> get_order(123)
       %Order{}
 
-      iex> get_order!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_order(456)
+      nil
 
   """
-  def get_order!(id), do: Repo.get!(Order, id)
+  def get_order(id), do: Repo.get(Order, id)
 
   @doc """
   Creates a order.
@@ -56,49 +55,53 @@ defmodule Booking.Orders do
   end
 
   @doc """
-  Updates a order.
+  Updates a order with payment.
 
   ## Examples
 
-      iex> update_order(order, %{field: new_value})
+      iex> update_order_with_payment(%Order{}, 55)
       {:ok, %Order{}}
 
-      iex> update_order(order, %{field: bad_value})
+      iex> update_order(%Order{}, 55)
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_order(%Order{} = order, attrs) do
+  def update_order_with_payment(%Order{} = order, payment_amount) do
+    balance_due = order.balance_due - payment_amount
+
     order
-    |> Order.changeset(attrs)
-    |> Repo.update()
+    |> Order.changeset(%{balance_due: balance_due})
+    |> Repo.update(returning: true)
   end
 
   @doc """
-  Deletes a order.
+  Creates an order and a payment, when both order total and payment amount are 0, just creates an order and not a payment
+  Note: when both are 0 the payment note is ignored since we are not adding payment row
 
   ## Examples
 
-      iex> delete_order(order)
+      iex> place_order_and_pay(%{total: 22}, %{amount: 2})
       {:ok, %Order{}}
 
-      iex> delete_order(order)
+      iex> update_order(%Order{}, 55)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_order(%Order{} = order) do
-    Repo.delete(order)
-  end
+  def place_order_and_pay(%{total: total} = order_attrs, %{amount: amount})
+      when total == 0 and amount == 0,
+      do: create_order(order_attrs)
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking order changes.
-
-  ## Examples
-
-      iex> change_order(order)
-      %Ecto.Changeset{data: %Order{}}
-
-  """
-  def change_order(%Order{} = order, attrs \\ %{}) do
-    Order.changeset(order, attrs)
+  def place_order_and_pay(order_attrs, payment_attrs) do
+    Repo.transaction(fn ->
+      with {:ok, %Order{} = order} <- create_order(order_attrs),
+           {:ok, %Payments.Payment{} = payment} <-
+             Payments.do_create_payment_for_order(order, payment_attrs),
+           {:ok, %Order{} = updated_order} <-
+             update_order_with_payment(order, payment.amount) do
+        updated_order |> Repo.preload(:payments_applied)
+      else
+        {:error, %Ecto.Changeset{} = changeset} -> Repo.rollback(changeset)
+      end
+    end)
   end
 end

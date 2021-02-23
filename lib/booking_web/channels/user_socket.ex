@@ -1,5 +1,6 @@
 defmodule BookingWeb.UserSocket do
-  use Phoenix.Socket
+  use Phoenix.Socket,
+    schema: BookingWeb.Schema
 
   ## Channels
   # channel "room:*", BookingWeb.RoomChannel

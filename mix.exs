@@ -46,8 +46,8 @@ defmodule Booking.MixProject do
       {:absinthe, "~> 1.5", override: true},
       {:absinthe_plug, "~> 1.5.4", override: true},
       {:httpoison, "~> 1.8", override: true},
-      {:absinthe_error_payload, "~> 1.0"},
-      {:ex_machina, "~> 2.4", only: [:test]}
+      {:absinthe_error_payload, "~> 1.1.3"},
+      {:absinthe_phoenix, "~> 2.0", override: true}
     ]
   end
 

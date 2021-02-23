@@ -15,9 +15,22 @@ defmodule Booking.Payments.Payment do
   end
 
   @doc false
-  def changeset(payment, attrs) do
+  def changeset(%__MODULE__{} = payment, attrs) do
     payment
-    |> cast(attrs, [:amount, :applied_at, :note])
-    |> validate_required([:amount, :applied_at, :note])
+    |> cast(attrs, [:amount, :note])
+    |> validate_required([:amount, :order])
+    |> foreign_key_constraint(:order_id)
+    |> put_change(:applied_at, DateTime.utc_now())
+    |> validate_amount()
+  end
+
+  defp validate_amount(%Ecto.Changeset{data: %{order: order}} = changeset) do
+    balance_due = Map.get(order || %{}, :balance_due)
+
+    if balance_due == 0 do
+      add_error(changeset, :amount, "Fully paid, no additional payment required")
+    else
+      validate_number(changeset, :amount, greater_than: 0, less_than_or_equal_to: balance_due)
+    end
   end
 end

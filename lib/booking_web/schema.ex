@@ -4,13 +4,14 @@ defmodule BookingWeb.Schema do
   import_types(Absinthe.Type.Custom)
   import_types(BookingWeb.Schema.OrderTypes)
   import_types(BookingWeb.Schema.PaymentTypes)
-
-  alias BookingWeb.Resolvers
+  import_types(AbsintheErrorPayload.ValidationMessageTypes)
 
   query do
-    @desc "Get all orders"
-    field :orders, list_of(:order) do
-      resolve(&Resolvers.Orders.list_orders/3)
-    end
+    import_fields(:order_queries)
+  end
+
+  mutation do
+    import_fields(:order_mutations)
+    import_fields(:payment_mutations)
   end
 end

@@ -8,8 +8,12 @@ defmodule BookingWeb.Router do
   scope "/api" do
     pipe_through :api
 
-    get "/", Absinthe.Plug.GraphiQL, schema: BookingWeb.Schema, interface: :playground
-    post "/", Absinthe.Plug, schema: BookingWeb.Schema
+    get "/", Absinthe.Plug.GraphiQL,
+      schema: BookingWeb.Schema,
+      interface: :playground,
+      socket: MyAppWeb.UserSocket
+
+    post "/", Absinthe.Plug, schema: BookingWeb.Schema, socket: MyAppWeb.UserSocket
   end
 
   # Enables LiveDashboard only for development

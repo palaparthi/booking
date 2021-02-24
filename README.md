@@ -16,6 +16,7 @@ This project provides API for order management, using Elixir, GraphQL(Absinthe),
    * Query to fetch all orders
    * Mutation to create an order
    * Mutation to apply a payment to an order
+   * Mutation to order and pay in one go
    * Subscriptions for all the above mutations
   
 ### TODOS
